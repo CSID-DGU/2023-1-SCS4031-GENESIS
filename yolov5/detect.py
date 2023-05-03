@@ -1,4 +1,4 @@
-# YOLOv5 🚀 by Ultralytics, GPL-3.0 license
+# YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
 """
 Run YOLOv5 detection inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
 
@@ -134,8 +134,15 @@ def run(
         # Second-stage classifier (optional)
         # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
 
+        # 여기부터 수정
+        stop_flag = False # 각 프레임마다 구별해야 하므로 시작부분에 추가
+        crosswalk_existence = False
+        # 여기까지
+
+
         # Process predictions
         for i, det in enumerate(pred):  # per image
+
             seen += 1
             if webcam:  # batch_size >= 1
                 p, im0, frame = path[i], im0s[i].copy(), dataset.count
@@ -161,6 +168,13 @@ def run(
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
+                    ######
+                    lst = [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]), int(cls)] # x1, y1, x2, y2, cls 순서
+                    print("~~~~~~~~~~~~~~~~~~~~")
+                    print(lst) # 객체가 한 사진에 14이 존재하면 14개가 나옴
+                    print("~~~~~~~~~~~~~~~~")
+                    ######
+
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
@@ -171,6 +185,36 @@ def run(
                         c = int(cls)  # integer class
                         label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
                         annotator.box_label(xyxy, label, color=colors(c, True))
+
+                        # 여기부터 수정
+                        # 1. 전방 빨간불 확인
+                        if c == 1 and stop_flag == False: # 1 = car_red, stop_flag = 멈추라는 소리를 한번만 출력하기 위해 출력되었는지 확인하는 변수
+                          print("멈추라고 소리 출력")
+                          stop_flag = True # 출력했다고 True로 바꿔줌               
+                        
+                        # 2. 보행자가 횡단보도 위에 있는지 확인 (파란불이거나, 이미 멈추라는 소리 출력했으면 여기로 넘어옴)
+                        elif lst[4] == 6: # 횡단보도가 존재할 때,
+                          crosswalk_lst = lst # 횡단보도의 바운딩 박스 정보를 리스트로 저장, 매 프레임마다 정보 다시 받아옴
+                          crosswalk_existence = True # 횡단보도가 존재함을 저장
+                        
+                        elif crosswalk_existence == True: # 이어서
+                          if lst[4] == 7: # 사람의 lst가 존재한다면(사람이 인식될 경우)
+                            condition1 = crosswalk_lst[0] <= lst[0] and lst[0] <= crosswalk_lst[2] # 가로방향 움직임 고려
+                            condition2 = crosswalk_lst[1] <= lst[3] and lst[3] <= crosswalk_lst[3] # 세로방향 움직임 고려
+                            con12 = condition1 and condition2 # 사람이 횡단보도 위에 존재한다면 True
+                            if con12 and stop_flag == False: # car_red라서 멈춰있는데 또 소리나면 이상함
+                              print("멈추라고 소리 출력")
+                              print("음성 출력 잠깐 멈추기 가능하다면 flag 대신 멈출 것 ??") # 1번에서 걸리지 않아야 출력됨, 여기서 flag 세우면 해제가 애매, 다른 방법?
+                              crosswalk_existence == False
+                              crosswalk_lst = []
+
+                        # 3. 전방 신호가 파란불로 바뀌었으면
+                        elif c == 0:
+                          stop_flag = False # 소리 출력 상태 리셋
+                        # 여기까지
+
+# 충돌 방지는 위 방법이 된다면 draw 함수로 임의의 y값에 대해 선 긋고, 좌표 비교 가능
+
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
 
