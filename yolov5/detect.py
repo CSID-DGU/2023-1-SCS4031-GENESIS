@@ -134,14 +134,15 @@ def run(
         # Second-stage classifier (optional)
         # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
 
-        # 여기부터 수정
-        stop_flag = False # 각 프레임마다 구별해야 하므로 시작부분에 추가
-        crosswalk_existence = False
-        # 여기까지
-
+        ##### 
+        stop_flag = False # 프레임에 상관없이 소리 알림을 계속 출력하면 안되므로 밖에 작성
+        ##### 
 
         # Process predictions
         for i, det in enumerate(pred):  # per image
+            #####
+            frame_lst = [] # 한 프레임(이미지)의 모든 객체 정보 저장하는 리스트
+            #####
 
             seen += 1
             if webcam:  # batch_size >= 1
@@ -169,10 +170,7 @@ def run(
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
                     ######
-                    lst = [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]), int(cls)] # x1, y1, x2, y2, cls 순서
-                    print("~~~~~~~~~~~~~~~~~~~~")
-                    print(lst) # 객체가 한 사진에 14이 존재하면 14개가 나옴
-                    print("~~~~~~~~~~~~~~~~")
+                    frame_lst.append([int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]), int(cls)]) # x1, y1, x2, y2, cls 순서
                     ######
 
                     if save_txt:  # Write to file
@@ -186,37 +184,36 @@ def run(
                         label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
                         annotator.box_label(xyxy, label, color=colors(c, True))
 
-                        # 여기부터 수정
-                        # 1. 전방 빨간불 확인
-                        if c == 1 and stop_flag == False: # 1 = car_red, stop_flag = 멈추라는 소리를 한번만 출력하기 위해 출력되었는지 확인하는 변수
-                          print("멈추라고 소리 출력")
-                          stop_flag = True # 출력했다고 True로 바꿔줌               
-                        
-                        # 2. 보행자가 횡단보도 위에 있는지 확인 (파란불이거나, 이미 멈추라는 소리 출력했으면 여기로 넘어옴)
-                        elif lst[4] == 6: # 횡단보도가 존재할 때,
-                          crosswalk_lst = lst # 횡단보도의 바운딩 박스 정보를 리스트로 저장, 매 프레임마다 정보 다시 받아옴
-                          crosswalk_existence = True # 횡단보도가 존재함을 저장
-                        
-                        elif crosswalk_existence == True: # 이어서
-                          if lst[4] == 7: # 사람의 lst가 존재한다면(사람이 인식될 경우)
-                            condition1 = crosswalk_lst[0] <= lst[0] and lst[0] <= crosswalk_lst[2] # 가로방향 움직임 고려
-                            condition2 = crosswalk_lst[1] <= lst[3] and lst[3] <= crosswalk_lst[3] # 세로방향 움직임 고려
-                            con12 = condition1 and condition2 # 사람이 횡단보도 위에 존재한다면 True
-                            if con12 and stop_flag == False: # car_red라서 멈춰있는데 또 소리나면 이상함
-                              print("멈추라고 소리 출력")
-                              print("음성 출력 잠깐 멈추기 가능하다면 flag 대신 멈출 것 ??") # 1번에서 걸리지 않아야 출력됨, 여기서 flag 세우면 해제가 애매, 다른 방법?
-                              crosswalk_existence == False
-                              crosswalk_lst = []
-
-                        # 3. 전방 신호가 파란불로 바뀌었으면
-                        elif c == 0:
-                          stop_flag = False # 소리 출력 상태 리셋
-                        # 여기까지
-
-# 충돌 방지는 위 방법이 된다면 draw 함수로 임의의 y값에 대해 선 긋고, 좌표 비교 가능
-
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
+            #####
+
+            # 1. 우회전 가능 여부 판단
+            for i in frame_lst: # frame_lst는 이런 형태 : [[336, 557, 363, 611, 7], [1004, 670, 1111, 975, 7]] 
+              if i[4] == 1 and stop_flag == False: # 저장한 객체 중 빨간 불이 존재
+                print("소리내서 멈추라고 알림")
+                stop_flag = True
+                break
+              elif i[4] == 6 and stop_flag == False: # 횡단보도가 존재한다면
+                for j in frame_lst:
+                  if j[4] == 7: # 사람이 존재하는지 확인 후
+                    condition1 = i[0] <= j[0] and j[0] <= i[2]
+                    condition2 = i[1] <= j[3] and j[3] <= i[3] # 위치 비교
+                    if condition1 and condition2 : # 횡단보도 위에 사람이 있다면
+                      print("소리내서 멈추라고 알림")
+                      stop_flag = True
+              elif i[4] == 0: # 초록 불이라면
+                stop_flag = False
+
+            # 2. 충돌 방지
+            safety_line = 300 # 임의의 안전 선의 y좌표
+            for i in frame_lst:
+              if i[4] == 7 or i[4] == 8: # 사람이나 오토바이일 경우
+                if i[3] <= safety_line:
+                  print("충돌방지 알림음 발생")
+
+            print(frame_lst)
+            #####
 
             # Stream results
             im0 = annotator.result()
