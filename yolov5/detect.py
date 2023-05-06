@@ -114,6 +114,10 @@ def run(
     # Run inference
     model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
+
+    ##### 
+    stop_flag = False # 프레임에 상관없이 소리 알림을 계속 출력하면 안되므로 밖에
+    ##### 
     for path, im, im0s, vid_cap, s in dataset:
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
@@ -134,9 +138,7 @@ def run(
         # Second-stage classifier (optional)
         # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
 
-        ##### 
-        stop_flag = False # 프레임에 상관없이 소리 알림을 계속 출력하면 안되므로 밖에 작성
-        ##### 
+        
 
         # Process predictions
         for i, det in enumerate(pred):  # per image
@@ -189,27 +191,27 @@ def run(
             #####
 
             # 1. 우회전 가능 여부 판단
-            for i in frame_lst: # frame_lst는 이런 형태 : [[336, 557, 363, 611, 7], [1004, 670, 1111, 975, 7]] 
-              if i[4] == 1 and stop_flag == False: # 저장한 객체 중 빨간 불이 존재
+            for ii in frame_lst: # frame_lst는 이런 형태 : [[336, 557, 363, 611, 7], [1004, 670, 1111, 975, 7]] 
+              if ii[4] == 1 and stop_flag == False: # 저장한 객체 중 빨간 불이 존재
                 print("소리내서 멈추라고 알림")
                 stop_flag = True
                 break
-              elif i[4] == 6 and stop_flag == False: # 횡단보도가 존재한다면
+              elif ii[4] == 6 and stop_flag == False: # 횡단보도가 존재한다면
                 for j in frame_lst:
                   if j[4] == 7: # 사람이 존재하는지 확인 후
-                    condition1 = i[0] <= j[0] and j[0] <= i[2]
-                    condition2 = i[1] <= j[3] and j[3] <= i[3] # 위치 비교
+                    condition1 = ii[0] <= j[0] and j[0] <= ii[2]
+                    condition2 = ii[1] <= j[3] and j[3] <= ii[3] # 위치 비교
                     if condition1 and condition2 : # 횡단보도 위에 사람이 있다면
                       print("소리내서 멈추라고 알림")
                       stop_flag = True
-              elif i[4] == 0: # 초록 불이라면
+              elif ii[4] == 0: # 초록 불이라면
                 stop_flag = False
 
             # 2. 충돌 방지
             safety_line = 300 # 임의의 안전 선의 y좌표
-            for i in frame_lst:
-              if i[4] == 7 or i[4] == 8: # 사람이나 오토바이일 경우
-                if i[3] <= safety_line:
+            for ii in frame_lst:
+              if ii[4] == 7 or ii[4] == 8: # 사람이나 오토바이일 경우
+                if ii[3] <= safety_line:
                   print("충돌방지 알림음 발생")
 
             print(frame_lst)
