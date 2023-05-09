@@ -1,38 +1,10 @@
-# YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
-"""
-Run YOLOv5 detection inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
-
-Usage - sources:
-    $ python detect.py --weights yolov5s.pt --source 0                               # webcam
-                                                     img.jpg                         # image
-                                                     vid.mp4                         # video
-                                                     screen                          # screenshot
-                                                     path/                           # directory
-                                                     list.txt                        # list of images
-                                                     list.streams                    # list of streams
-                                                     'path/*.jpg'                    # glob
-                                                     'https://youtu.be/Zgi9g1ksQHc'  # YouTube
-                                                     'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
-
-Usage - formats:
-    $ python detect.py --weights yolov5s.pt                 # PyTorch
-                                 yolov5s.torchscript        # TorchScript
-                                 yolov5s.onnx               # ONNX Runtime or OpenCV DNN with --dnn
-                                 yolov5s_openvino_model     # OpenVINO
-                                 yolov5s.engine             # TensorRT
-                                 yolov5s.mlmodel            # CoreML (macOS-only)
-                                 yolov5s_saved_model        # TensorFlow SavedModel
-                                 yolov5s.pb                 # TensorFlow GraphDef
-                                 yolov5s.tflite             # TensorFlow Lite
-                                 yolov5s_edgetpu.tflite     # TensorFlow Edge TPU
-                                 yolov5s_paddle_model       # PaddlePaddle
-"""
-
 import argparse
 import os
 import platform
 import sys
 from pathlib import Path
+from gtts import gTTS
+from IPython.display import Audio 
 
 import torch
 
@@ -193,6 +165,12 @@ def run(
             # 1. 우회전 가능 여부 판단
             for ii in frame_lst: # frame_lst는 이런 형태 : [[336, 557, 363, 611, 7], [1004, 670, 1111, 975, 7]] 
               if ii[4] == 1 and stop_flag == False: # 저장한 객체 중 빨간 불이 존재
+                """
+                # 음성 TTS 기능 추가
+                eng_wav = gTTS('Caution Stop') 
+                eng_wav.save('eng.wav')
+                display(Audio('eng.wav', autoplay=True))
+                """
                 print("소리내서 멈추라고 알림")
                 stop_flag = True
                 break
@@ -202,6 +180,12 @@ def run(
                     condition1 = ii[0] <= j[0] and j[0] <= ii[2]
                     condition2 = ii[1] <= j[3] and j[3] <= ii[3] # 위치 비교
                     if condition1 and condition2 : # 횡단보도 위에 사람이 있다면
+                      """
+                    # 음성 TTS 기능 추가
+                    eng_wav = gTTS('Caution Stop') 
+                    eng_wav.save('eng.wav')
+                    display(Audio('eng.wav', autoplay=True))
+                      """
                       print("소리내서 멈추라고 알림")
                       stop_flag = True
               elif ii[4] == 0: # 초록 불이라면
@@ -212,6 +196,12 @@ def run(
             for ii in frame_lst:
               if ii[4] == 7 or ii[4] == 8: # 사람이나 오토바이일 경우
                 if ii[3] <= safety_line:
+                  """
+                  # 음성 TTS 기능 추가
+                  eng_wav = gTTS('Caution Stop') 
+                  eng_wav.save('eng.wav')
+                  display(Audio('eng.wav', autoplay=True))
+                  """
                   print("충돌방지 알림음 발생")
 
             print(frame_lst)
