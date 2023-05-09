@@ -170,6 +170,7 @@ def run(
                 eng_wav = gTTS('Caution Stop') 
                 eng_wav.save('eng.wav')
                 display(Audio('eng.wav', autoplay=True))
+                # 문구 수정 예정
                 """
                 print("소리내서 멈추라고 알림")
                 stop_flag = True
