@@ -149,10 +149,11 @@ def run(
                 s += f'{i}: '
             else:
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
-
+            '''
             p = Path(p)  # to Path
             save_path = str(save_dir / p.name)  # im.jpg
             txt_path = str(save_dir / 'labels' / p.stem) + ('' if dataset.mode == 'image' else f'_{frame}')  # im.txt
+            '''
             s += '%gx%g ' % im.shape[2:]  # print string
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0.copy() if save_crop else im0  # for save_crop
@@ -175,7 +176,7 @@ def run(
                     elif int(cls) == 8 :
                         autocy_list.append([int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]), int(cls)])
                     ####
-                    
+                    '''
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
@@ -188,19 +189,19 @@ def run(
                         annotator.box_label(xyxy, label, color=colors(c, True))
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
-            
+                    '''
             ##################################################
             
-                if int(cls)==?? : # 차량신호등 적색
-                    situation_list[0] = True
-                elif int(cls)==?? : # 보행자신호등 청색
-                    situation_list[1] = True
-                elif int(cls)==?? : # 사람 존재
-                    situation_list[2] = True
-                elif int(cls)==?? : # 기타 객체 존재
-                    situation_list[3] = True
-                elif int(cls)==?? : # 횡단보도 존재
-                    situation_list[4] = True
+                    if int(cls)== 1: # 차량신호등 적색
+                        situation_list[0] = True
+                    elif int(cls)== 5 : # 보행자신호등 청색
+                        situation_list[1] = True
+                    elif int(cls)== 7 : # 사람 존재
+                        situation_list[2] = True
+                    elif int(cls)== 8 : # 기타 객체 존재
+                        situation_list[3] = True
+                    elif int(cls)== 6 : # 횡단보도 존재
+                        situation_list[4] = True
             
             # 1. 우회전 알림
             if situation_list[4] : 
@@ -226,7 +227,7 @@ def run(
                         print("sound on")
             
             ##################################################
-            
+            '''
             # Stream results
             im0 = annotator.result()
             if view_img:
@@ -255,7 +256,7 @@ def run(
                         save_path = str(Path(save_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
                         vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                     vid_writer[i].write(im0)
-
+                    '''
         # Print time (inference-only)
         LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
 
