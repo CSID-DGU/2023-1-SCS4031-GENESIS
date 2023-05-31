@@ -215,12 +215,12 @@ def run(
             # 2. 충돌 방지
             safety_line = [0,0] # x,y
             if (situation_list[3])|(situation_list[4]):
-                for ip in person_list:
+                for ip in range(0,len(person_list)):
                     ix1 = person_list[ip][0]
                     iy2 = person_list[ip][3]
                     if (safety_line[0] >= ix1) | (safety_line[1] <= iy2) :
                         print("sound on")
-                for ip in autocy_list:
+                for ip in range(0,len(autocy_list)):
                     ix1 = autocy_list[ip][0]
                     iy2 = autocy_list[ip][3]
                     if (safety_line[0] >= ix1) | (safety_line[1] <= iy2) :
