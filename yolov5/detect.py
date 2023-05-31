@@ -21,7 +21,14 @@ from utils.general import (LOGGER, Profile, check_file, check_img_size, check_im
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, smart_inference_mode
 
-
+""" colab sound test
+def beep():
+  from google.colab import output
+  output.eval_js('new Audio(\
+"https://upload.wikimedia.org/wikipedia/commons/0/05/Beep-09.ogg")\
+.play()') 
+beep()
+"""
 @smart_inference_mode()
 def run(
         weights=ROOT / 'yolov5s.pt',  # model path or triton URL
