@@ -49,6 +49,12 @@ from utils.general import (LOGGER, Profile, check_file, check_img_size, check_im
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, smart_inference_mode
 
+from google.colab import output
+from google.colab.output import eval_js
+
+def beep():
+  eval_js('new Audio("https://upload.wikimedia.org/wikipedia/commons/0/05/Beep-09.ogg").play()')
+
 @smart_inference_mode()
 def run(
         weights=ROOT / 'yolov5s.pt',  # model path or triton URL
@@ -207,10 +213,11 @@ def run(
             if situation_list[4] : 
                 if situation_list[0] :
                     print("sound on")
-                    time.sleep(3)
+                    beep()
+                    
                 elif (situation_list[1])&(situation_list[2]) : 
                     print("sound on")
-                    time.sleep(3)
+                    beep()
                     
             sound_on = False
             
@@ -229,6 +236,7 @@ def run(
                         
                 if sound_on :
                     print("sound on")
+                    beep()
             
             ##################################################
             '''
