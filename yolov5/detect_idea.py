@@ -211,6 +211,8 @@ def run(
                 elif (situation_list[1])&(situation_list[2]) : 
                     print("sound on")
                     time.sleep(3)
+                    
+            sound_on = False
             
             # 2. 충돌 방지
             safety_line = [0,300] # x,y
@@ -218,11 +220,15 @@ def run(
                 for ip in range(0,len(person_list)):
                     iy2 = person_list[ip][3]
                     if (safety_line[1] <= iy2) :
-                        print("sound on")
+                        sound_on = True
+                        
                 for ip in range(0,len(autocy_list)):
                     iy2 = autocy_list[ip][3]
                     if (safety_line[1] <= iy2) :
-                        print("sound on")
+                        sound_on = True
+                        
+                if sound_on :
+                    print("sound on")
             
             ##################################################
             '''
