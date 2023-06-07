@@ -24,8 +24,7 @@ from utils.torch_utils import select_device, smart_inference_mode
 """ colab sound test
 def beep():
   from google.colab import output
-  output.eval_js('new Audio(\
-"https://upload.wikimedia.org/wikipedia/commons/0/05/Beep-09.ogg")\
+  output.eval_js('new Audio(\"https://upload.wikimedia.org/wikipedia/commons/0/05/Beep-09.ogg")\
 .play()') 
 beep()
 """

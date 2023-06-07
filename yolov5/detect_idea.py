@@ -49,11 +49,12 @@ from utils.general import (LOGGER, Profile, check_file, check_img_size, check_im
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, smart_inference_mode
 
-from google.colab import output
-from google.colab.output import eval_js
-
+import winsound as sd
+ 
 def beep():
-  eval_js('new Audio("https://upload.wikimedia.org/wikipedia/commons/0/05/Beep-09.ogg").play()')
+    fr = 2000    # range : 37 ~ 32767
+    du = 1000     # 1000 ms ==1second
+    sd.Beep(fr, du) # winsound.Beep(frequency, duration)
 
 @smart_inference_mode()
 def run(
