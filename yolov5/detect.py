@@ -21,13 +21,13 @@ from utils.general import (LOGGER, Profile, check_file, check_img_size, check_im
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, smart_inference_mode
 
-""" colab sound test
+import winsound as sd
+ 
 def beep():
-  from google.colab import output
-  output.eval_js('new Audio(\"https://upload.wikimedia.org/wikipedia/commons/0/05/Beep-09.ogg")\
-.play()') 
-beep()
-"""
+    fr = 2000    # range : 37 ~ 32767
+    du = 1000     # 1000 ms ==1second
+    sd.Beep(fr, du) # winsound.Beep(frequency, duration)
+
 @smart_inference_mode()
 def run(
         weights=ROOT / 'yolov5s.pt',  # model path or triton URL
@@ -179,6 +179,7 @@ def run(
                 # 문구 수정 예정
                 """
                 print("소리내서 멈추라고 알림")
+                beep()
                 stop_flag = True
                 break
               elif ii[4] == 6 and stop_flag == False: # 횡단보도가 존재한다면
@@ -194,6 +195,7 @@ def run(
                     display(Audio('eng.wav', autoplay=True))
                       """
                       print("소리내서 멈추라고 알림")
+                      beep()
                       stop_flag = True
               elif ii[4] == 0: # 초록 불이라면
                 stop_flag = False
@@ -210,6 +212,7 @@ def run(
                   display(Audio('eng.wav', autoplay=True))
                   """
                   print("충돌방지 알림음 발생")
+                  beep()
 
             print(frame_lst)
             #####

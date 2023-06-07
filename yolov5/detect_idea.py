@@ -148,6 +148,7 @@ def run(
             # 차량신호등, 보행자신호등, 사람유무, 기타객체 , 횡단보도
             person_list = []
             autocy_list = []
+            p_road = []
             #######################################
             
             seen += 1
@@ -182,6 +183,8 @@ def run(
                         person_list.append([int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]), int(cls)])
                     elif int(cls) == 8 :
                         autocy_list.append([int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]), int(cls)])
+                    elif int(cls) == 6 :
+                        p_road.append([int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]), int(cls)])
                     ####
                     
                     if save_txt:  # Write to file
@@ -209,16 +212,26 @@ def run(
                         situation_list[3] = True
                     elif int(cls)== 6 : # 횡단보도 존재
                         situation_list[4] = True
-            
+                        
+            sound_on = False
             # 1. 우회전 알림
             if situation_list[4] : 
                 if situation_list[0] :
                     print("sound on")
                     beep()
                     
-                elif (situation_list[1])&(situation_list[2]) : 
-                    print("sound on")
-                    beep()
+                elif (situation_list[2]) : 
+                    for ip in range(0,len(person_list)):
+                        #ix1 = person_list[ip][0]
+                        ix2 = person_list[ip][2]
+                        #iy1 = person_list[ip][1]
+                        iy2 = person_list[ip][3]
+
+                        if (p_road[0][3] > iy2) & (p_road[0][2] < ix2):
+                            sound_on = True
+                    if sound_on : 
+                        print("sound on")
+                        beep()
                     
             sound_on = False
             
