@@ -1,4 +1,4 @@
-# YOLOv5 🚀 by Ultralytics, GPL-3.0 license
+# YOLOv5 by Ultralytics, GPL-3.0 license
 """
 Run inference on images, videos, directories, streams, etc.
 
@@ -45,6 +45,17 @@ from utils.general import (LOGGER, check_file, check_img_size, check_imshow, che
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, time_sync
 
+from playsound import playsound
+
+'''
+
+import winsound as sd
+ 
+def beep():
+    fr = 2000    # range : 37 ~ 32767
+    du = 1000     # 1000 ms ==1second
+    sd.Beep(fr, du) # winsound.Beep(frequency, duration)
+'''
 
 @torch.no_grad()
 def run(
@@ -103,6 +114,9 @@ def run(
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
         bs = 1  # batch_size
     vid_path, vid_writer = [None] * bs, [None] * bs
+    ##### 
+    stop_flag = False # 프레임에 상관없이 소리 알림을 계속 출력하면 안되므로 밖에
+    ##### 
 
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
@@ -139,6 +153,10 @@ def run(
             else:
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
+            #####
+            frame_lst = [] # 한 프레임(이미지)의 모든 객체 정보 저장하는 리스트
+            #####
+
             p = Path(p)  # to Path
             save_path = str(save_dir / p.name)  # im.jpg
             txt_path = str(save_dir / 'labels' / p.stem) + ('' if dataset.mode == 'image' else f'_{frame}')  # im.txt
@@ -157,6 +175,9 @@ def run(
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
+######
+                    frame_lst.append([int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]), int(cls)]) # x1, y1, x2, y2, cls 순서
+                    ######
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
@@ -169,6 +190,57 @@ def run(
                         annotator.box_label(xyxy, label, color=colors(c, True))
                         if save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
+            #####
+
+            # 1. 우회전 가능 여부 판단
+            for ii in frame_lst: # frame_lst는 이런 형태 : [[336, 557, 363, 611, 7], [1004, 670, 1111, 975, 7]] 
+              if ii[4] == 1 and stop_flag == False: # 저장한 객체 중 빨간 불이 존재
+                """
+                # 음성 TTS 기능 추가
+                eng_wav = gTTS('Caution Stop') 
+                eng_wav.save('eng.wav')
+                display(Audio('eng.wav', autoplay=True))
+                # 문구 수정 예정
+                """
+                print("소리내서 멈추라고 알림")
+                playsound("998D97505CDE939F24.mp3")
+                #beep()
+                stop_flag = True
+                break
+              elif ii[4] == 6 and stop_flag == False: # 횡단보도가 존재한다면
+                for j in frame_lst:
+                  if j[4] == 7: # 사람이 존재하는지 확인 후
+                    condition1 = ii[0] <= j[0] and j[0] <= ii[2]
+                    condition2 = ii[1] <= j[3] and j[3] <= ii[3] # 위치 비교
+                    if condition1 and condition2 : # 횡단보도 위에 사람이 있다면
+                      """
+                    # 음성 TTS 기능 추가
+                    eng_wav = gTTS('Caution Stop') 
+                    eng_wav.save('eng.wav')
+                    display(Audio('eng.wav', autoplay=True))
+                      """
+                      print("소리내서 멈추라고 알림")
+                      playsound("998D97505CDE939F24.mp3")            
+                      stop_flag = True
+              elif ii[4] == 0: # 초록 불이라면
+                stop_flag = False
+
+            # 2. 충돌 방지
+            safety_line = 300 # 임의의 안전 선의 y좌표
+            for ii in frame_lst:
+              if ii[4] == 7 or ii[4] == 8: # 사람이나 오토바이일 경우
+                if ii[3] <= safety_line:
+                  """
+                  # 음성 TTS 기능 추가
+                  eng_wav = gTTS('Caution Stop') 
+                  eng_wav.save('eng.wav')
+                  display(Audio('eng.wav', autoplay=True))
+                  """
+                  print("충돌방지 알림음 발생")
+                  playsound("998D97505CDE939F24.mp3")
+                  
+            #####
+
 
             # Stream results
             im0 = annotator.result()
