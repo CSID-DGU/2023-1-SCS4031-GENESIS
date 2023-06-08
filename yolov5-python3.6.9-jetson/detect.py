@@ -47,16 +47,6 @@ from utils.torch_utils import select_device, time_sync
 
 from playsound import playsound
 
-'''
-
-import winsound as sd
- 
-def beep():
-    fr = 2000    # range : 37 ~ 32767
-    du = 1000     # 1000 ms ==1second
-    sd.Beep(fr, du) # winsound.Beep(frequency, duration)
-'''
-
 @torch.no_grad()
 def run(
         weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
@@ -175,7 +165,7 @@ def run(
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
-######
+                    ######
                     frame_lst.append([int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]), int(cls)]) # x1, y1, x2, y2, cls 순서
                     ######
                     if save_txt:  # Write to file
@@ -203,7 +193,7 @@ def run(
                 # 문구 수정 예정
                 """
                 print("소리내서 멈추라고 알림")
-                playsound("998D97505CDE939F24.mp3")
+                playsound("996C593F5CDE955132.mp3")
                 #beep()
                 stop_flag = True
                 break
@@ -220,7 +210,7 @@ def run(
                     display(Audio('eng.wav', autoplay=True))
                       """
                       print("소리내서 멈추라고 알림")
-                      playsound("998D97505CDE939F24.mp3")            
+                      playsound("996C593F5CDE955132.mp3")            
                       stop_flag = True
               elif ii[4] == 0: # 초록 불이라면
                 stop_flag = False
