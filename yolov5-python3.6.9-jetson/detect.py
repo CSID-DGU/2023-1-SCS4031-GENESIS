@@ -47,16 +47,6 @@ from utils.torch_utils import select_device, time_sync
 
 from playsound import playsound
 
-'''
-
-import winsound as sd
- 
-def beep():
-    fr = 2000    # range : 37 ~ 32767
-    du = 1000     # 1000 ms ==1second
-    sd.Beep(fr, du) # winsound.Beep(frequency, duration)
-'''
-
 @torch.no_grad()
 def run(
         weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
@@ -116,6 +106,7 @@ def run(
     vid_path, vid_writer = [None] * bs, [None] * bs
     ##### 
     stop_flag = False # 프레임에 상관없이 소리 알림을 계속 출력하면 안되므로 밖에
+    motorcycle_flag = False
     ##### 
 
     # Run inference
@@ -175,7 +166,7 @@ def run(
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
-######
+                    ######
                     frame_lst.append([int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]), int(cls)]) # x1, y1, x2, y2, cls 순서
                     ######
                     if save_txt:  # Write to file
@@ -195,16 +186,10 @@ def run(
             # 1. 우회전 가능 여부 판단
             for ii in frame_lst: # frame_lst는 이런 형태 : [[336, 557, 363, 611, 7], [1004, 670, 1111, 975, 7]] 
               if ii[4] == 1 and stop_flag == False: # 저장한 객체 중 빨간 불이 존재
-                """
-                # 음성 TTS 기능 추가
-                eng_wav = gTTS('Caution Stop') 
-                eng_wav.save('eng.wav')
-                display(Audio('eng.wav', autoplay=True))
-                # 문구 수정 예정
-                """
+                
                 print("소리내서 멈추라고 알림")
-                playsound("998D97505CDE939F24.mp3")
-                #beep()
+                playsound("996C593F5CDE955132.mp3")
+                
                 stop_flag = True
                 break
               elif ii[4] == 6 and stop_flag == False: # 횡단보도가 존재한다면
@@ -212,35 +197,32 @@ def run(
                   if j[4] == 7: # 사람이 존재하는지 확인 후
                     condition1 = ii[0] <= j[0] and j[0] <= ii[2]
                     condition2 = ii[1] <= j[3] and j[3] <= ii[3] # 위치 비교
-                    if condition1 and condition2 : # 횡단보도 위에 사람이 있다면
-                      """
-                    # 음성 TTS 기능 추가
-                    eng_wav = gTTS('Caution Stop') 
-                    eng_wav.save('eng.wav')
-                    display(Audio('eng.wav', autoplay=True))
-                      """
+                    if condition1 and condition2 : # 횡단보도 위에 사람이 있다면                     
                       print("소리내서 멈추라고 알림")
-                      playsound("998D97505CDE939F24.mp3")            
+                      playsound("996C593F5CDE955132.mp3")            
                       stop_flag = True
               elif ii[4] == 0: # 초록 불이라면
                 stop_flag = False
 
             # 2. 충돌 방지
-            safety_line = 300 # 임의의 안전 선의 y좌표
+            safety_line = 600 # 임의의 안전 선의 y좌표 (숫자 클 수록 아래인듯)
+            side_line = 600 # 인도, 차도 구분 선
+            
             for ii in frame_lst:
-              if ii[4] == 7 or ii[4] == 8: # 사람이나 오토바이일 경우
-                if ii[3] <= safety_line:
-                  """
-                  # 음성 TTS 기능 추가
-                  eng_wav = gTTS('Caution Stop') 
-                  eng_wav.save('eng.wav')
-                  display(Audio('eng.wav', autoplay=True))
-                  """
+              if ii[4] == 7: # 사람일 경우
+                if ii[3] >= safety_line and ii[0] <= side_line:                  
                   print("충돌방지 알림음 발생")
                   playsound("998D97505CDE939F24.mp3")
                   
+              elif ii[4] == 8: # 오토바이일 경우
+                if ii[3] >= safety_line and motorcycle_flag == False and ii[0] <= side_line: # 가깝고, 울린 적 없고, 차도 위일 경우             
+                  print("충돌방지 알림음 발생")
+                  playsound("99776F355CDE891324.mp3")
+                  motorcycle_flag = True
+                else: # 안전거리 밖으로 벗어났다면
+                  motorcycle_flag = False
+                      
             #####
-
 
             # Stream results
             im0 = annotator.result()
