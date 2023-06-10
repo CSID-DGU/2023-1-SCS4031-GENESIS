@@ -186,10 +186,8 @@ def run(
             # 1. 우회전 가능 여부 판단
             for ii in frame_lst: # frame_lst는 이런 형태 : [[336, 557, 363, 611, 7], [1004, 670, 1111, 975, 7]] 
               if ii[4] == 1 and stop_flag == False: # 저장한 객체 중 빨간 불이 존재
-                
                 print("소리내서 멈추라고 알림")
-                playsound("996C593F5CDE955132.mp3")
-                
+                playsound("996C593F5CDE955132.mp3")              
                 stop_flag = True
                 break
               elif ii[4] == 6 and stop_flag == False: # 횡단보도가 존재한다면
@@ -205,21 +203,20 @@ def run(
                 stop_flag = False
 
             # 2. 충돌 방지
-            safety_line = 600 # 임의의 안전 선의 y좌표 (숫자 클 수록 아래인듯)
+            safety_line = 600 # 임의의 안전 선의 y좌표
             side_line = 600 # 인도, 차도 구분 선
             
             for ii in frame_lst:
               if ii[4] == 7: # 사람일 경우
-                if ii[3] >= safety_line and ii[0] <= side_line:                  
+                if ii[3] >= safety_line and ii[0] <= side_line: # 가깝고, 차도 위                  
                   print("충돌방지 알림음 발생")
-                  playsound("998D97505CDE939F24.mp3")
-                  
+                  playsound("998D97505CDE939F24.mp3")                
               elif ii[4] == 8: # 오토바이일 경우
                 if ii[3] >= safety_line and motorcycle_flag == False and ii[0] <= side_line: # 가깝고, 울린 적 없고, 차도 위일 경우             
                   print("충돌방지 알림음 발생")
                   playsound("99776F355CDE891324.mp3")
                   motorcycle_flag = True
-                else: # 안전거리 밖으로 벗어났다면
+                elif ii[3] < safety_line: # 안전거리 밖으로 벗어났다면
                   motorcycle_flag = False
                       
             #####
