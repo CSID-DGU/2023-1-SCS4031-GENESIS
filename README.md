@@ -86,7 +86,7 @@ YOLOv5 기반 젯슨 나노 교통상황 음성 알림 시스템 : 우회전을 
    ```
 7. YOLOv5 설치
    ```
-   https://github.com/CSID-DGU/2023-1-SCS4031-GENESIS.git
+   git clone https://github.com/CSID-DGU/2023-1-SCS4031-GENESIS.git
    cd 2023-1-SCS4031-GENESIS/yolov5-python3.6.9-jetson
    ```
    다음 내용 requirements.txt에서 제거
